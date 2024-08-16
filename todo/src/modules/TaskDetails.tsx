@@ -10,6 +10,8 @@ import {
   MenuItem,
 } from "@mui/material";
 import { Task, TaskStatus } from "../redux/state";
+import { useAppSelector } from '../redux/hooks';
+import { getPayloadData } from '../services/utils';
 
 interface DetailsDialogProps {
   open: boolean;
@@ -20,7 +22,8 @@ interface DetailsDialogProps {
     inicio: string;
     fim: string;
     descricao: string;
-    utilizador: string;
+    utilizadorId: number | string;
+    utilizador: string | string;
   };
   onSave: (id: number, updatedTask: Partial<Task>) => void;
 }
@@ -39,6 +42,9 @@ const statusReverseOptions: { [key: string]: 'open' | 'completed' | 'expired' } 
 
 const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetails, onSave }) => {
   const [editedTask, setEditedTask] = useState(taskDetails);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const authState = useAppSelector(state => state.authState);
+  const token = authState.token;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -56,6 +62,18 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
     onSave(taskDetails.id, updatedTask);
     onClose();
   };
+
+  React.useEffect(() => {
+    if (token){
+      const payload = getPayloadData(token);
+
+      if(payload.role === 'admin'){
+        setIsAdmin(true)
+      }
+    }
+    
+
+  }, [token]);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -114,13 +132,15 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
           rows={4}
         />
 
-        <Typography variant="body1"><strong>Utilizador:</strong></Typography>
+        <Typography variant="body1" style={{ visibility: isAdmin ? 'visible' : 'hidden' }}><strong>Utilizador:</strong></Typography>
+        
         <TextField
           name="utilizador"
-          value={editedTask.utilizador}
+          value={editedTask.utilizadorId}
           onChange={handleInputChange}
           fullWidth
           margin="dense"
+          style={{ visibility: isAdmin ? 'visible' : 'hidden' }}
         />
       </DialogContent>
       <DialogActions>

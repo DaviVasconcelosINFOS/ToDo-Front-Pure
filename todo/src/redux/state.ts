@@ -3,7 +3,8 @@ export type TaskStatus = "open" | "completed" | "expired";
 export interface Task {
   id: number;
   titulo:string;
-  data_Termino: string;
+  data_Inicio: number;
+  data_Termino: number;
   descricao: string;
   status: TaskStatus;
   user: User | null; 

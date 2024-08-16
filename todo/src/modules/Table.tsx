@@ -19,6 +19,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import InfoIcon from "@mui/icons-material/Info";
 import CircleIcon from "@mui/icons-material/Circle";
 import { visuallyHidden } from "@mui/utils";
+import moment from 'moment';
 import DetailsDialog from "./TaskDetails";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -51,24 +52,30 @@ interface Data {
   status: string;
   inicio: string;
   fim: string;
+  titulo : string;
   descricao: string;
+  utilizadorId: number | string;
   utilizador: string;
 }
 
 function createData(
   id: number,
   status: string,
-  inicio: string,
-  fim: string,
+  inicio: number,
+  fim: number,
+  titulo: string,
   descricao: string,
+  utilizadorId: number | string,
   utilizador: string
 ): Data {
   return {
     id,
     status: mapStatus(status),
-    inicio,
-    fim,
+    inicio: moment(inicio).format('YYYY-MM-DD'), 
+    fim: moment(fim).format('YYYY-MM-DD'), 
+    titulo,
     descricao,
+    utilizadorId,
     utilizador,
   };
 }
@@ -138,6 +145,12 @@ const headCells: HeadCell[] = [
     numeric: false,
     disablePadding: false,
     label: "Fim",
+  },
+  {
+    id: "titulo",
+    numeric: false,
+    disablePadding: false,
+    label: "Titulo",
   },
   {
     id: "descricao",
@@ -297,6 +310,7 @@ export default function EnhancedTable() {
           let response;
           if(payload.role === "admin"){
             response = await getAllTasks(token);
+            setIsAdmin(true);
           }else{
             response = await getTasksByUserId(token, payload.id);
           }
@@ -304,9 +318,11 @@ export default function EnhancedTable() {
             createData(
               task.id,
               task.status,
+              task.data_Inicio,
               task.data_Termino,
-              task.data_Termino,
+              task.titulo,
               task.descricao,
+              task.user?.id ?? '',
               task.user?.nome ?? ''
             )
           )
@@ -380,6 +396,7 @@ export default function EnhancedTable() {
     await deleteTaskAction(id);
     dispatch(deleteTaskAction(id));
     setTasksData(tasksData.filter((task) => task.id !== id));
+    //meter a chamda da api
   };
 
   const handleComplete = async (id: number) => {
@@ -389,6 +406,8 @@ export default function EnhancedTable() {
         task.id === id ? { ...task, status: "Completed" } : task
       )
     );
+
+    //chamar a api
   };
 
   const handleSaveTaskDetails = async (id: number, updatedTask: Partial<Task>) => {
@@ -450,15 +469,16 @@ export default function EnhancedTable() {
                       <TableCell align="left">
                         {/* Status icons */}
                         {row.status === "Completed" ? (
+                          <CircleIcon sx={{ color: "blue" }} />
+                        ) : row.status === "open" ? (
                           <CircleIcon sx={{ color: "green" }} />
-                        ) : row.status === "In Progress" ? (
-                          <CircleIcon sx={{ color: "yellow" }} />
                         ) : (
                           <CircleIcon sx={{ color: "red" }} />
                         )}
                       </TableCell>
                       <TableCell align="left">{row.inicio}</TableCell>
                       <TableCell align="left">{row.fim}</TableCell>
+                      <TableCell align="left">{row.titulo}</TableCell>
                       <TableCell align="left">{row.descricao}</TableCell>
                       {isAdmin && (
                         <TableCell align="left">{row.utilizador}</TableCell>

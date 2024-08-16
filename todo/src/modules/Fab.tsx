@@ -5,13 +5,14 @@ import axios from 'axios';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { getPayloadData } from "../services/utils";
 import { useAppSelector } from '../redux/hooks';
-import getAllTasks, { getAllUsers, getTasksByUserId } from '../services/api';
+import getAllTasks, { addTask, getAllUsers, getTasksByUserId } from '../services/api';
+import { isDataView } from 'util/types';
 
 const FabButton = () => {
   const [open, setOpen] = useState(false);
-  const [taskData, setTaskData] = useState({ status: '', inicio: '', fim: '', descricao: '', utilizador: '' });
+  const [taskData, setTaskData] = useState({ status: '', fim: '', titulo : '',descricao: '', utilizador: ''});
   const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState('');
+  const [selectedUser, setSelectedUser] = useState<number>();
   const [isAdmin, setIsAdmin] = useState(false);
   const [id_user, setIdUser] = useState();
   const authState = useAppSelector(state => state.authState);
@@ -50,19 +51,45 @@ const FabButton = () => {
   };
 
   const handleSubmit = () => {
-    const finalTaskData = { ...taskData, utilizador: selectedUser };
-    axios.post('/api/addTask', finalTaskData)
-      .then(response => {
-        console.log('Tarefa adicionada:', response.data);
-        handleClose();
-      })
-      .catch(error => {
-        console.error('Erro ao adicionar a tarefa:', error);
-      });
+    try{
+      if (isAdmin){
+        const finalTaskData = { ...taskData, utilizador: selectedUser };
+        const result = addTask(token, {
+          titulo : finalTaskData.titulo,
+          descricao : finalTaskData.descricao,
+          data_Termino : finalTaskData.fim,
+          status : 'open',
+          user : {
+            id : finalTaskData.utilizador
+          }
+
+
+        })
+      }else{
+        if (token){
+          const payload = getPayloadData(token);
+          const finalTaskData = { ...taskData,  payload};
+          const result = addTask(token, {
+            titulo : finalTaskData.titulo,
+            descricao : finalTaskData.descricao,
+            data_Termino : finalTaskData.fim,
+            status : 'open',
+            user : {
+              id : finalTaskData.payload.id
+            }
+          })
+        }
+        
+      }
+      handleClose();
+      window.location.reload()
+    }catch(erro){
+        console.error(erro)
+    }
   };
 
   const handleUserSelection = (userId: string) => {
-    setSelectedUser(userId);
+    setSelectedUser(parseInt(userId));
   };
 
   const columns: GridColDef[] = [
@@ -81,22 +108,21 @@ const FabButton = () => {
         <DialogContent>
           <TextField
             margin="dense"
-            name="inicio"
-            label="Início"
-            fullWidth
-            type="date"
-            variant="outlined"
-            value={taskData.inicio}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="dense"
             name="fim"
             label="Fim"
             fullWidth
             type="date"
             variant="outlined"
             value={taskData.fim}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="dense"
+            name="titulo"
+            label="Titulo"
+            fullWidth
+            variant="outlined"
+            value={taskData.titulo}
             onChange={handleChange}
           />
           <TextField

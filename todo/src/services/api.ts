@@ -130,4 +130,25 @@ export async function signUpApi(email: string, password: string) {
     }
   }
 
+  export async function addTask(token : string | null, data : any) {
+    try {
+
+      const response = await axios({
+        method: 'post',
+        url: `${URL}/api/tasks/add`,
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        data : data
+      });
+
+      return response.data.data;
+    } catch (error) {
+      console.error('Erro ao obter todos os usuários:', error);
+      throw new Error('Não foi possível obter os usuários.');
+    }
+  }
+
 
