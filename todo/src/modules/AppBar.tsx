@@ -9,31 +9,21 @@ import Container from "@mui/material/Container";
 import Avatar from "@mui/material/Avatar";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { RootState } from "../redux/store";
 
 const settings = ["Logout"];
 
 function HomeAppBar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
-    null
-  );
-  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
-    null
-  );
+  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
-  };
+  const userName = useSelector((state: RootState) => state.authState.user);
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
-  };
-
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
   };
 
   const handleCloseUserMenu = () => {
@@ -49,11 +39,13 @@ function HomeAppBar() {
     <AppBar position="static">
       <Container maxWidth="xl">
         <Toolbar disableGutters sx={{ justifyContent: "space-between" }}>
-          <img
-            src="/logoinfos.png"
-            alt="Logo Infos"
-            style={{ width: 140, height: 40, marginRight: 8 }}
-          />
+        <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+            <img
+              src="/logoinfos.png"
+              alt="Logo Infos"
+              style={{ width: '100%', maxWidth: 140, height: 'auto', marginRight: 8 }}
+            />
+          </Box>
           <Typography
             variant="h6"
             noWrap
@@ -70,10 +62,14 @@ function HomeAppBar() {
             }}
           ></Typography>
 
-          <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Open settings">
+          <Box sx={{ flexGrow: 0, display: "flex", alignItems: "center" }}>
+            {/* Exibe o nome do usuário logado */}
+            <Typography variant="body1" sx={{ mr: 2 }}>
+              {userName}
+            </Typography>
+            <Tooltip title="Log Out">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="" src="/static/images/avatar/2.jpg" />
+              <Avatar alt={userName || "User"} src="/static/images/avatar/2.jpg" />
               </IconButton>
             </Tooltip>
             <Menu

@@ -19,13 +19,10 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import InfoIcon from "@mui/icons-material/Info";
 import CircleIcon from "@mui/icons-material/Circle";
 import { visuallyHidden } from "@mui/utils";
-import moment from 'moment';
+import moment from "moment";
 import DetailsDialog from "./TaskDetails";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  deleteTaskAction,
-  updateTask,
-} from "../redux/action";
+import { deleteTaskAction, updateTask } from "../redux/action";
 import { RootState, AppDispatch } from "../redux/store";
 import { AuthState, Task } from "../redux/state";
 import { useState } from "react";
@@ -38,12 +35,12 @@ import { getPayloadData } from "../services/utils";
 function mapStatus(status: string): TaskStatus {
   switch (status) {
     case "open":
-    case "completed":    
+    case "completed":
     case "expired":
       return status;
     default:
       console.warn(`Status desconhecido recebido: ${status}`);
-      return "open"; 
+      return "open";
   }
 }
 
@@ -52,7 +49,7 @@ interface Data {
   status: string;
   inicio: string;
   fim: string;
-  titulo : string;
+  titulo: string;
   descricao: string;
   utilizadorId: number | string;
   utilizador: string;
@@ -71,15 +68,14 @@ function createData(
   return {
     id,
     status: mapStatus(status),
-    inicio: moment(inicio).format('YYYY-MM-DD'), 
-    fim: moment(fim).format('YYYY-MM-DD'), 
+    inicio: moment(inicio).format("YYYY-MM-DD"),
+    fim: moment(fim).format("YYYY-MM-DD"),
     titulo,
     descricao,
     utilizadorId,
     utilizador,
   };
 }
-
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -298,34 +294,35 @@ export default function EnhancedTable() {
   const [tasksData, setTasksData] = useState<Data[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const authState = useAppSelector((state: { authState: AuthState & PersistPartial; }) => state.authState);
+  const authState = useAppSelector(
+    (state: { authState: AuthState & PersistPartial }) => state.authState
+  );
   const token = authState.token;
 
   React.useEffect(() => {
     const fetchTasks = async () => {
-      if (token){
+      if (token) {
         setLoading(true);
         try {
           const payload = getPayloadData(token);
           let response;
-          if(payload.role === "admin"){
+          if (payload.role === "admin") {
             response = await getAllTasks(token);
             setIsAdmin(true);
-          }else{
+          } else {
             response = await getTasksByUserId(token, payload.id);
           }
-          const rows = response.map((task: Task) => (
+          const rows = response.map((task: Task) =>
             createData(
               task.id,
-              task.status,
+              getTaskStatus(task),
               task.data_Inicio,
               task.data_Termino,
               task.titulo,
               task.descricao,
-              task.user?.id ?? '',
-              task.user?.nome ?? ''
+              task.user?.id ?? "",
+              task.user?.nome ?? ""
             )
-          )
           );
           setTasksData(rows);
         } catch (error) {
@@ -337,6 +334,19 @@ export default function EnhancedTable() {
     };
     fetchTasks();
   }, []);
+
+  const getTaskStatus = (task: Task) => {
+    const now = moment();
+    const endDate = moment(task.data_Termino);
+
+    if (now.isAfter(endDate)) {
+      return "Atrasado";
+    } else if (endDate.diff(now, "days") <= 2) {
+      return "Próximo do fim";
+    } else {
+      return task.status; // Status original se não estiver próximo do fim ou atrasado
+    }
+  };
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -410,7 +420,10 @@ export default function EnhancedTable() {
     //chamar a api
   };
 
-  const handleSaveTaskDetails = async (id: number, updatedTask: Partial<Task>) => {
+  const handleSaveTaskDetails = async (
+    id: number,
+    updatedTask: Partial<Task>
+  ) => {
     dispatch(updateTask(id, updatedTask));
     setTasksData(
       tasksData.map((task) =>
@@ -420,7 +433,8 @@ export default function EnhancedTable() {
   };
 
   const handleDetails = (id: number) => {
-    const task = tasksData.find((task: { id: number }) => task.id === id) || null;
+    const task =
+      tasksData.find((task: { id: number }) => task.id === id) || null;
     setSelectedTask(task);
     setOpenDialog(true);
   };
@@ -469,11 +483,27 @@ export default function EnhancedTable() {
                       <TableCell align="left">
                         {/* Status icons */}
                         {row.status === "Completed" ? (
-                          <CircleIcon sx={{ color: "blue" }} />
-                        ) : row.status === "open" ? (
-                          <CircleIcon sx={{ color: "green" }} />
+                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <CircleIcon sx={{ color: "blue", mr: 1 }} />
+                            <Typography variant="body2">Concluído</Typography>
+                          </Box>
+                        ) : row.status === "Próximo do fim" ? (
+                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <CircleIcon sx={{ color: "yellow", mr: 1 }} />
+                            <Typography variant="body2">
+                              Próximo do fim
+                            </Typography>
+                          </Box>
+                        ) : row.status === "Atrasado" ? (
+                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <CircleIcon sx={{ color: "red", mr: 1 }} />
+                            <Typography variant="body2">Atrasado</Typography>
+                          </Box>
                         ) : (
-                          <CircleIcon sx={{ color: "red" }} />
+                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <CircleIcon sx={{ color: "green", mr: 1 }} />
+                            <Typography variant="body2">Aberto</Typography>
+                          </Box>
                         )}
                       </TableCell>
                       <TableCell align="left">{row.inicio}</TableCell>

@@ -43,6 +43,10 @@ export default function Login() {
     }
   };
 
+  const handleSignupClick = () => {
+    navigate('/signup');
+  };
+
   return (
       <Grid container component="main" sx={{ height: '100vh' }}>
         <CssBaseline />
@@ -103,9 +107,13 @@ export default function Login() {
               </Button>
               <Grid container>
                 <Grid item>
-                  <Link href="/signup" variant="body2">
-                    {"Don't have an account? Sign Up"}
-                  </Link>
+                <Typography
+                  variant="body2"
+                  sx={{ cursor: 'pointer', textDecoration: 'underline' }}
+                  onClick={handleSignupClick}
+                >
+                  {"Don't have an account? Sign Up"}
+                </Typography>
                 </Grid>
               </Grid>
             </Box>
