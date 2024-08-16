@@ -3,6 +3,9 @@ import { Box, Fab, Dialog, DialogTitle, DialogContent, DialogActions, TextField,
 import AddIcon from '@mui/icons-material/Add';
 import axios from 'axios';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { getPayloadData } from "../services/utils";
+import { useAppSelector } from '../redux/hooks';
+import getAllTasks, { getAllUsers, getTasksByUserId } from '../services/api';
 
 const FabButton = () => {
   const [open, setOpen] = useState(false);
@@ -10,20 +13,28 @@ const FabButton = () => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [id_user, setIdUser] = useState();
+  const authState = useAppSelector(state => state.authState);
+  const token = authState.token;
+
 
   useEffect(() => {
-    /*const payload = getPayloadData(token);
-    if(payload.role === "admin"){
-      setIsAdmin(true);
-    } */
-    axios.get('/api/getUsers')
-      .then(response => {
-        setUsers(response.data);
-      })
-      .catch(error => {
-        console.error('Erro ao buscar usuários:', error);
-      });
-  });
+    const fetchdata = async () => {
+      if (token) {
+        console.log('Token:', token);
+        const payload = getPayloadData(token);
+  
+        if (payload.role === "admin") {
+          setIsAdmin(true);
+          const result = await getAllUsers(token);
+          setUsers(result);
+        }
+      }
+    };
+  
+    fetchdata();
+  }, [token]);
+  
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -56,7 +67,7 @@ const FabButton = () => {
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
-    { field: 'name', headerName: 'Nome', width: 150 },
+    { field: 'nome', headerName: 'Nome', width: 150 },
     { field: 'email', headerName: 'Email', width: 200 },
   ];
 

@@ -287,7 +287,6 @@ export default function EnhancedTable() {
 
   const authState = useAppSelector((state: { authState: AuthState & PersistPartial; }) => state.authState);
   const token = authState.token;
-  //const token = 'eyJraWQiOiJCRUBUX0pXVCIsImFsZyI6IkhTMjU2In0.eyJzdWIiOiJhbGJlcnRvLmp1bmlvckBpbmZvcy5wdCIsImF1dGhvcml0aWVzIjpbIlJPTEVfVVNFUiJdLCJwYXlsb2FkIjp7InJvbGUiOiJ1c2VyIiwiaWQiOjEsImVuZHBvaW50cyI6W119LCJpYXQiOjE3MjM2MzAyMjQsImV4cCI6MTcyMzYzNzQyNH0.ycIBzdK9KP4cGXRLJL0Ir2MhA7KeFWJZDTh1_4tWkZM';
 
   React.useEffect(() => {
     const fetchTasks = async () => {
