@@ -1,7 +1,6 @@
 'use client';
 
-import { combineReducers, Store, UnknownAction} from '@reduxjs/toolkit';
-import { configureStore } from '@reduxjs/toolkit';
+import { combineReducers, Store, UnknownAction, configureStore } from '@reduxjs/toolkit';
 import storage from './webstorage';
 import { authReducer, taskReducer } from './reducer';
 import { persistReducer, persistStore } from 'redux-persist';
@@ -10,7 +9,6 @@ import { persistReducer, persistStore } from 'redux-persist';
 const persistConfig = {
   key: 'auth',
   storage,
-  whitelist: ['authState'],
 };
 
 const persistedAuthReducer = persistReducer(persistConfig, authReducer);
