@@ -15,6 +15,8 @@ import { login } from '../../services/api';
 import { loginSuccess } from '../../redux/action';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import { getPayloadData } from '../../services/utils';
+import { Token } from '@mui/icons-material';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -32,7 +34,10 @@ export default function Login() {
       login(email, password)
         .then(response => {
           if (response.data) {
-            dispatch(loginSuccess(response.data.token, response.data.user));
+
+            const payload = getPayloadData(response.data.token);
+
+            dispatch(loginSuccess(response.data.token, payload.nome));
             navigate('/home');
           } else {
             setSnackbarMessage('Erro ao processar a resposta');

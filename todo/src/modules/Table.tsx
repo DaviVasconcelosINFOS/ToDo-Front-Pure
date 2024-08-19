@@ -31,6 +31,7 @@ import { TaskStatus } from "../redux/state";
 import { PersistPartial } from "redux-persist/es/persistReducer";
 import getAllTasks, { deletTask, editTask, getTasksByUserId } from "../services/api";
 import { getPayloadData } from "../services/utils";
+import { Snackbar, Button, Alert } from "@mui/material";
 
 
 interface Data {
@@ -282,6 +283,8 @@ export default function EnhancedTable() {
   const [selectedTask, setSelectedTask] = useState<Data | null>(null);
   const [tasksData, setTasksData] = useState<Data[]>([]);
   const [loading, setLoading] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState('');
 
   const authState = useAppSelector(
     (state: { authState: AuthState & PersistPartial }) => state.authState
@@ -354,6 +357,10 @@ export default function EnhancedTable() {
     setOrderBy(property);
   };
 
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
+
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
       const newSelecteds = tasksData.map((taskData: Data) => taskData.id);
@@ -383,13 +390,26 @@ export default function EnhancedTable() {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - tasksData.length) : 0;
 
+
   const handleDelete = async (id: number) => {
-    const responce = deletTask(token, id);
-    console.info(responce);
-    await deleteTaskAction(id);
-    dispatch(deleteTaskAction(id));
-    setTasksData(tasksData.filter((task) => task.id !== id));
-    //meter a chamda da api
+    try {
+
+      const responce = deletTask(token, id);
+ 
+      if (await responce === true) {
+        await deleteTaskAction(id);
+        dispatch(deleteTaskAction(id));
+        setTasksData(tasksData.filter((task) => task.id !== id));
+        setSnackbarMessage('Tarefa Removida');
+      } else {
+        setSnackbarMessage('Falha ao remover a tarefa');
+      }
+    } catch (error) {
+      console.error('Erro ao remover a tarefa:', error);
+      setSnackbarMessage('Erro ao remover a tarefa');
+    } finally {
+      setOpenSnackbar(true);
+    }
   };
 
   const handleComplete = async (id: number) => {
@@ -567,6 +587,21 @@ export default function EnhancedTable() {
           taskDetails={selectedTask}
         />
       )}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        action={
+          <Button color="inherit" onClick={handleCloseSnackbar}>
+            Close
+          </Button>
+        }
+      >
+        <Alert onClose={handleCloseSnackbar} severity="info" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
+    
   );
 }

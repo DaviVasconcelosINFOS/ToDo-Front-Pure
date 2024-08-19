@@ -3,6 +3,7 @@ interface JwtPayload {
     authorities: string[];
     payload: {
       role: string;
+      nome: string;
       id: number;
       endpoints: string[];
     };
@@ -30,9 +31,9 @@ interface JwtPayload {
     return JSON.parse(jsonPayload) as JwtPayload;
   };
 
-  export const getPayloadData = (token: string): { role: string; id: number } => {
+  export const getPayloadData = (token: string): { role: string; id: number ; nome : string} => {
     const payload = extractPayload(token);
-    const { role, id } = payload.payload;
-    return { role, id };
+    const { role, id, nome } = payload.payload;
+    return { role, id, nome };
   };
   
