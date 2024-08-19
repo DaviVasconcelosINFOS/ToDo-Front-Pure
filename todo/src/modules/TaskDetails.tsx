@@ -7,6 +7,8 @@ import {
   Button,
   TextField,
   Typography,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import { Task, TaskStatus } from "../redux/state";
 import { useAppSelector } from '../redux/hooks';
@@ -47,28 +49,34 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
   const [editedTask, setEditedTask] = useState(taskDetails);
   const [isAdmin, setIsAdmin] = useState(false);
   const authState = useAppSelector(state => state.authState);
+  
   const token = authState.token;
 
   const handleSave = () => {
+    try{
     const updatedTask: Partial<Task> = {
-      ...editedTask,
-      status: statusReverseOptions[statusOptions[editedTask.status]] as TaskStatus // Converte o status para o tipo esperado
-    };
-    onSave(taskDetails.id, updatedTask);
-    
-    const formattedFim = moment(editedTask.fim).format('YYYY-MM-DD');
-    editTask(token,
-      {
-        "titulo" : taskDetails.titulo,
-        "descricao" : taskDetails.descricao,
-        "data_Termino" : formattedFim,
-        "status" : updatedTask.status,
-        "user" : null
-      },
-      taskDetails.id
-    );
-    onClose();
+        ...editedTask,
+        status: statusReverseOptions[statusOptions[editedTask.status]] as TaskStatus // Converte o status para o tipo esperado
+      };
+      onSave(taskDetails.id, updatedTask);
+      
+      const formattedFim = moment(editedTask.fim).format('YYYY-MM-DD');
+      editTask(token,
+        {
+          "titulo" : taskDetails.titulo,
+          "descricao" : taskDetails.descricao,
+          "data_Termino" : formattedFim,
+          "status" : updatedTask.status,
+          "user" : null
+        },
+        taskDetails.id
+      );
+      onClose();
+    }catch{
+      console.error('Falha ao editar Tarefa');
+    }
   };
+
 
   React.useEffect(() => {
     if (token){

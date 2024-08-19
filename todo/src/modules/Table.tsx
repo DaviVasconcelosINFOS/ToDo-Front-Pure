@@ -405,7 +405,6 @@ export default function EnhancedTable() {
         setSnackbarMessage('Falha ao remover a tarefa');
       }
     } catch (error) {
-      console.error('Erro ao remover a tarefa:', error);
       setSnackbarMessage('Erro ao remover a tarefa');
     } finally {
       setOpenSnackbar(true);
@@ -427,15 +426,20 @@ export default function EnhancedTable() {
         id
       );
   
-      console.info(response);
+      
 
       setTasksData(
         tasksData.map((task) =>
           task.id === id ? { ...task, status: "completed" } : task
         )
       );
+
+      setSnackbarMessage('Tarefa concluída');
     } catch (error) {
       console.error("Failed to update task:", error);
+      setSnackbarMessage('Falha ao concluir a tarefa');
+    }finally{
+      setOpenSnackbar(true);
     }
   };
 
