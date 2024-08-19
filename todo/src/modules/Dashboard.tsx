@@ -15,7 +15,7 @@ import FabButton from "./Fab";
 
 const Dashboard: React.FC = () => {
   const dispatch = useAppDispatch();  
-  const tasks = useAppSelector((state: RootState) => state.taskState.tasks);  // Adjusted to match the state structure
+  const tasks = useAppSelector((state: RootState) => state.taskState.tasks);
   const authState = useAppSelector(state => state.authState);
   const token = authState.token;
 

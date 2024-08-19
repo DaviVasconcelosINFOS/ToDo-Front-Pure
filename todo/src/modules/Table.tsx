@@ -315,7 +315,6 @@ export default function EnhancedTable() {
           );
 
           setTasksData(rows);
-
           dispatch(loadTasks(rows));
           
         } catch (error) {
@@ -326,7 +325,7 @@ export default function EnhancedTable() {
       }
     };
     fetchTasks();
-  }, []);
+  }, [dispatch]);
 
   const getTaskStatus = (task: Task) => {
     if(task.status != 'completed'){
@@ -365,23 +364,7 @@ export default function EnhancedTable() {
   };
 
   const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
-    const selectedIndex = selected.indexOf(id);
-    let newSelected: readonly number[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-
-    setSelected(newSelected);
+    //Função para selecionar row
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -411,27 +394,29 @@ export default function EnhancedTable() {
 
   const handleComplete = async (id: number) => {
     dispatch(updateTask(id, { status: "completed" }));
-    const responce = editTask(token, 
-    {
-      "titulo" : null,
-      "descricao" : null,
-      "data_Termino" : null,
-      "status" : "completed",
-      "user" : null
-    },
-    id
-    );
+    try {
 
-    console.info(responce);
-    
+      const response = await editTask(token, 
+        {
+          titulo: null,
+          descricao: null,
+          data_Termino: null,
+          status: "completed",
+          user: null
+        },
+        id
+      );
+  
+      console.info(response);
 
-    setTasksData(
-      tasksData.map((task) =>
-        task.id === id ? { ...task, status: "completed" } : task
-    )
-    );
-
-    //chamar a api
+      setTasksData(
+        tasksData.map((task) =>
+          task.id === id ? { ...task, status: "completed" } : task
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update task:", error);
+    }
   };
 
   const handleSaveTaskDetails = async (

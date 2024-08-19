@@ -56,6 +56,16 @@ export const taskReducer = (state = initialTaskState, action: TaskActionTypes): 
           [taskToRemove.status]: state.counters[taskToRemove.status] - 1,
         },
       };
+      
+      case UPDATE_TASK_STATUS:
+      return {
+        ...state,
+        tasks: state.tasks.map(task =>
+          task.id === action.payload.id
+            ? { ...task, ...action.payload.updatedTaskData }
+            : task
+        ),
+      };
 
     default:
       return state;
