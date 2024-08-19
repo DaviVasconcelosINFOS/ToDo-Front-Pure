@@ -33,13 +33,13 @@ interface DetailsDialogProps {
 const statusOptions: { [key: string]: string } = {
   'open': 'Pendente',
   'completed': 'Concluída',
-  'atrasado': 'Atrasado' // Corrigido de "Atrazado" para "Atrasado"
+  'atrasado': 'Atrasado'
 };
 
 const statusReverseOptions: { [key: string]: TaskStatus } = {
   'Pendente': 'open',
   'Concluída': 'completed',
-  'Atrasado': 'atrasado' // Corrigido de "Atrazado" para "Atrasado"
+  'Atrasado': 'atrasado'
 };
 
 
