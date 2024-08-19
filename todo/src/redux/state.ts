@@ -1,4 +1,4 @@
-export type TaskStatus = 'open' | "completed" | "atrazado";
+export type TaskStatus = 'open' | "completed" | "atrasado";
 
 export interface Task {
   id: number;
@@ -20,7 +20,7 @@ export interface TaskState {
   counters: {
     open: number,
     completed: number,
-    atrazado: number,
+    atrasado: number,
   }
 }
 

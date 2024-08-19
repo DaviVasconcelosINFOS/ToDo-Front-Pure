@@ -9,7 +9,7 @@ const initialTaskState: TaskState = {
   counters: {
     open: 0,
     completed: 0,
-    atrazado: 0,
+    atrasado: 0,
   },
 };
 
@@ -25,7 +25,7 @@ export const taskReducer = (state = initialTaskState, action: TaskActionTypes): 
       const newCounters = {
         open: action.payload.filter((task) => task.status === 'open' || 'close to end').length,
         completed: action.payload.filter((task) => task.status === 'completed').length,
-        atrazado: action.payload.filter((task) => task.status === 'atrazado').length,
+        atrasado: action.payload.filter((task) => task.status === 'atrasado').length,
       };
       return {
         ...state,

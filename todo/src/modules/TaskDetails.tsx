@@ -7,7 +7,6 @@ import {
   Button,
   TextField,
   Typography,
-  MenuItem,
 } from "@mui/material";
 import { Task, TaskStatus } from "../redux/state";
 import { useAppSelector } from '../redux/hooks';
@@ -34,14 +33,15 @@ interface DetailsDialogProps {
 const statusOptions: { [key: string]: string } = {
   'open': 'Pendente',
   'completed': 'Concluída',
-  'atrazado': 'Atrazado'
+  'atrasado': 'Atrasado' // Corrigido de "Atrazado" para "Atrasado"
 };
 
-const statusReverseOptions: { [key: string]: 'open' | 'completed' | 'atrazado' } = {
+const statusReverseOptions: { [key: string]: TaskStatus } = {
   'Pendente': 'open',
   'Concluída': 'completed',
-  'Atrazado': 'atrazado'
+  'Atrasado': 'atrasado' // Corrigido de "Atrazado" para "Atrasado"
 };
+
 
 const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetails, onSave }) => {
   const [editedTask, setEditedTask] = useState(taskDetails);
@@ -49,43 +49,38 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
   const authState = useAppSelector(state => state.authState);
   const token = authState.token;
 
-
   const handleSave = () => {
-    const updatedTask = {
+    const updatedTask: Partial<Task> = {
       ...editedTask,
-      status: statusReverseOptions[statusOptions[editedTask.status] as keyof typeof statusReverseOptions] 
+      status: statusReverseOptions[statusOptions[editedTask.status]] as TaskStatus // Converte o status para o tipo esperado
     };
     onSave(taskDetails.id, updatedTask);
+    
     const formattedFim = moment(editedTask.fim).format('YYYY-MM-DD');
     editTask(token,
       {
         "titulo" : taskDetails.titulo,
         "descricao" : taskDetails.descricao,
         "data_Termino" : formattedFim,
-        "status" : taskDetails.status,
+        "status" : updatedTask.status,
         "user" : null
       },
       taskDetails.id
-    )
+    );
     onClose();
   };
 
   React.useEffect(() => {
     if (token){
       const payload = getPayloadData(token);
-
       if(payload.role === 'admin'){
         setIsAdmin(true)
       }
     }
-    
-
   }, [token]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    console.log("Changing field:", name, "to value:", value); // Verifica o valor do campo
-  
     setEditedTask((prev) => ({
       ...prev,
       [name]: value,
@@ -97,26 +92,7 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
       <DialogTitle>Detalhes da Tarefa</DialogTitle>
       <DialogContent>
         <Typography variant="body1"><strong>Status:</strong></Typography>
-        <TextField
-          select
-          name="status"
-          value={statusOptions[editedTask.status]}
-          onChange={(e) => {
-            const value = e.target.value as keyof typeof statusReverseOptions;
-            setEditedTask((prev) => ({
-              ...prev,
-              status: statusReverseOptions[value]
-            }));
-          }}
-          fullWidth
-          margin="dense"
-        >
-          {Object.entries(statusOptions).map(([key, label]) => (
-            <MenuItem key={key} value={label}>
-              {label}
-            </MenuItem>
-          ))}
-        </TextField>
+        <Typography variant="body2">{statusOptions[editedTask.status]}</Typography>
 
         <Typography variant="body1"><strong>Início:</strong></Typography>
         <TextField
@@ -126,7 +102,7 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
           onChange={handleInputChange}
           fullWidth
           margin="dense"
-          disabled = {true}
+          disabled
         />
 
         <Typography variant="body1"><strong>Fim:</strong></Typography>
@@ -139,7 +115,7 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
           margin="dense"
         />
 
-        <Typography variant="body1"><strong>Titulo:</strong></Typography>
+        <Typography variant="body1"><strong>Título:</strong></Typography>
         <TextField
           name="titulo"
           value={editedTask.titulo}
@@ -162,7 +138,6 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
         />
 
         <Typography variant="body1" style={{ visibility: isAdmin ? 'visible' : 'hidden' }}><strong>Utilizador:</strong></Typography>
-        
         <TextField
           name="utilizador"
           value={editedTask.utilizadorId}
