@@ -15,50 +15,18 @@ import FabButton from "./Fab";
 
 const Dashboard: React.FC = () => {
   const dispatch = useAppDispatch();  
-  const tasks = useSelector((state: RootState) => state.taskState.tasks);  // Adjusted to match the state structure
+  const tasks = useAppSelector((state: RootState) => state.taskState.tasks);  // Adjusted to match the state structure
   const authState = useAppSelector(state => state.authState);
   const token = authState.token;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (token) {
-        console.log('Token:', token);
 
-        const payload = getPayloadData(token);
-        let result;
-        if (payload.role === "admin") {
-          result = await getAllTasks(token);
-        } else {
-          result = await getTasksByUserId(token, payload.id);
-        }
-
-        const tasks = result.map((item: any) => ({
-          id: item.id,
-          titulo: item.titulo,
-          data_Termino: new Date(item.data_Termino).toISOString(),
-          descricao: item.descricao,
-          status: item.status,
-          user: item.user ? {
-            id: item.user.id || null,
-            nome: item.user.nome || null,
-          } : null,
-        }));
-
-        dispatch(loadTasks(tasks));
-      } else {
-        console.error('Token não disponível');
-      }
-    };
-    fetchData();
-  }, [dispatch, token]);
-
-  const getTaskCountByStatus = (tasks: Task[], status: string) => {
-    return tasks.filter(task => task.status === status).length;
+  const getTaskCountByStatus = (tasks: Task[], statuses: string[]) => {
+    return tasks.filter(task => statuses.includes(task.status)).length;
   };
 
-  const openTasks = useMemo(() => getTaskCountByStatus(tasks, 'open'), [tasks]);
-  const expiredTasks = useMemo(() => getTaskCountByStatus(tasks, 'expired'), [tasks]);
-  const completedTasks = useMemo(() => getTaskCountByStatus(tasks, 'completed'), [tasks]);
+  const openTasks = useMemo(() => getTaskCountByStatus(tasks, ['open', 'close to end']), [tasks]);
+  const expiredTasks = useMemo(() => getTaskCountByStatus(tasks, ['atrazado']), [tasks]);
+  const completedTasks = useMemo(() => getTaskCountByStatus(tasks, ['completed']), [tasks]);
 
   return (
     <div>

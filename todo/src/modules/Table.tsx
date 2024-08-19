@@ -22,27 +22,16 @@ import { visuallyHidden } from "@mui/utils";
 import moment from "moment";
 import DetailsDialog from "./TaskDetails";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteTaskAction, updateTask } from "../redux/action";
+import { deleteTaskAction, loadTasks, updateTask } from "../redux/action";
 import { RootState, AppDispatch } from "../redux/store";
 import { AuthState, Task } from "../redux/state";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { TaskStatus } from "../redux/state";
 import { PersistPartial } from "redux-persist/es/persistReducer";
-import getAllTasks, { getTasksByUserId } from "../services/api";
+import getAllTasks, { deletTask, editTask, getTasksByUserId } from "../services/api";
 import { getPayloadData } from "../services/utils";
 
-function mapStatus(status: string): TaskStatus {
-  switch (status) {
-    case "open":
-    case "completed":
-    case "expired":
-      return status;
-    default:
-      console.warn(`Status desconhecido recebido: ${status}`);
-      return "open";
-  }
-}
 
 interface Data {
   id: number;
@@ -67,7 +56,7 @@ function createData(
 ): Data {
   return {
     id,
-    status: mapStatus(status),
+    status: status,
     inicio: moment(inicio).format("YYYY-MM-DD"),
     fim: moment(fim).format("YYYY-MM-DD"),
     titulo,
@@ -316,7 +305,7 @@ export default function EnhancedTable() {
             createData(
               task.id,
               getTaskStatus(task),
-              task.data_Inicio,
+              task.data_Criacao,
               task.data_Termino,
               task.titulo,
               task.descricao,
@@ -324,7 +313,11 @@ export default function EnhancedTable() {
               task.user?.nome ?? ""
             )
           );
+
           setTasksData(rows);
+
+          dispatch(loadTasks(rows));
+          
         } catch (error) {
           console.error(error);
         } finally {
@@ -336,16 +329,21 @@ export default function EnhancedTable() {
   }, []);
 
   const getTaskStatus = (task: Task) => {
-    const now = moment();
-    const endDate = moment(task.data_Termino);
-
-    if (now.isAfter(endDate)) {
-      return "Atrasado";
-    } else if (endDate.diff(now, "days") <= 2) {
-      return "Próximo do fim";
-    } else {
-      return task.status; // Status original se não estiver próximo do fim ou atrasado
+    if(task.status != 'completed'){
+      const now = moment();
+      const endDate = moment(task.data_Termino);
+      console.info(now.isAfter(endDate));
+      if (now.isAfter(endDate)) {
+        return "atrazado";
+      } else if (endDate.diff(now, "days") <= 2) {
+        return "close to end";
+      } else {
+        return task.status;
+      }
+    }else{
+      return task.status
     }
+    
   };
 
   const handleRequestSort = (
@@ -403,6 +401,8 @@ export default function EnhancedTable() {
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - tasksData.length) : 0;
 
   const handleDelete = async (id: number) => {
+    const responce = deletTask(token, id);
+    console.info(responce);
     await deleteTaskAction(id);
     dispatch(deleteTaskAction(id));
     setTasksData(tasksData.filter((task) => task.id !== id));
@@ -411,10 +411,24 @@ export default function EnhancedTable() {
 
   const handleComplete = async (id: number) => {
     dispatch(updateTask(id, { status: "completed" }));
+    const responce = editTask(token, 
+    {
+      "titulo" : null,
+      "descricao" : null,
+      "data_Termino" : null,
+      "status" : "completed",
+      "user" : null
+    },
+    id
+    );
+
+    console.info(responce);
+    
+
     setTasksData(
       tasksData.map((task) =>
-        task.id === id ? { ...task, status: "Completed" } : task
-      )
+        task.id === id ? { ...task, status: "completed" } : task
+    )
     );
 
     //chamar a api
@@ -482,19 +496,19 @@ export default function EnhancedTable() {
                     >
                       <TableCell align="left">
                         {/* Status icons */}
-                        {row.status === "Completed" ? (
+                        {row.status === "completed" ? (
                           <Box sx={{ display: "flex", alignItems: "center" }}>
                             <CircleIcon sx={{ color: "blue", mr: 1 }} />
                             <Typography variant="body2">Concluído</Typography>
                           </Box>
-                        ) : row.status === "Próximo do fim" ? (
+                        ) : row.status === "close to end" ? (
                           <Box sx={{ display: "flex", alignItems: "center" }}>
                             <CircleIcon sx={{ color: "yellow", mr: 1 }} />
                             <Typography variant="body2">
                               Próximo do fim
                             </Typography>
                           </Box>
-                        ) : row.status === "Atrasado" ? (
+                        ) : row.status === "atrazado" ? (
                           <Box sx={{ display: "flex", alignItems: "center" }}>
                             <CircleIcon sx={{ color: "red", mr: 1 }} />
                             <Typography variant="body2">Atrasado</Typography>

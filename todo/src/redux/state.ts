@@ -1,9 +1,9 @@
-export type TaskStatus = "open" | "completed" | "expired";
+export type TaskStatus = 'open' | "completed" | "atrazado";
 
 export interface Task {
   id: number;
   titulo:string;
-  data_Inicio: number;
+  data_Criacao: number;
   data_Termino: number;
   descricao: string;
   status: TaskStatus;
@@ -20,7 +20,7 @@ export interface TaskState {
   counters: {
     open: number,
     completed: number,
-    expired: number,
+    atrazado: number,
   }
 }
 

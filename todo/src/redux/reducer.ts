@@ -9,7 +9,7 @@ const initialTaskState: TaskState = {
   counters: {
     open: 0,
     completed: 0,
-    expired: 0,
+    atrazado: 0,
   },
 };
 
@@ -23,9 +23,9 @@ export const taskReducer = (state = initialTaskState, action: TaskActionTypes): 
   switch (action.type) {
     case LOAD_TASKS:
       const newCounters = {
-        open: action.payload.filter((task) => task.status === 'open').length,
+        open: action.payload.filter((task) => task.status === 'open' || 'close to end').length,
         completed: action.payload.filter((task) => task.status === 'completed').length,
-        expired: action.payload.filter((task) => task.status === 'expired').length,
+        atrazado: action.payload.filter((task) => task.status === 'atrazado').length,
       };
       return {
         ...state,

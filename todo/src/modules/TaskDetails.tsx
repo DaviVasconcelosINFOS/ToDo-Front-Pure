@@ -12,6 +12,8 @@ import {
 import { Task, TaskStatus } from "../redux/state";
 import { useAppSelector } from '../redux/hooks';
 import { getPayloadData } from '../services/utils';
+import { editTask } from '../services/api';
+import moment from 'moment';
 
 interface DetailsDialogProps {
   open: boolean;
@@ -21,6 +23,7 @@ interface DetailsDialogProps {
     status: string;
     inicio: string;
     fim: string;
+    titulo : string;
     descricao: string;
     utilizadorId: number | string;
     utilizador: string | string;
@@ -31,13 +34,13 @@ interface DetailsDialogProps {
 const statusOptions: { [key: string]: string } = {
   'open': 'Pendente',
   'completed': 'Concluída',
-  'expired': 'Expirada'
+  'atrazado': 'Atrazado'
 };
 
-const statusReverseOptions: { [key: string]: 'open' | 'completed' | 'expired' } = {
+const statusReverseOptions: { [key: string]: 'open' | 'completed' | 'atrazado' } = {
   'Pendente': 'open',
   'Concluída': 'completed',
-  'Expirada': 'expired'
+  'Atrazado': 'atrazado'
 };
 
 const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetails, onSave }) => {
@@ -46,13 +49,6 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
   const authState = useAppSelector(state => state.authState);
   const token = authState.token;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setEditedTask((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
 
   const handleSave = () => {
     const updatedTask = {
@@ -60,6 +56,17 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
       status: statusReverseOptions[statusOptions[editedTask.status] as keyof typeof statusReverseOptions] 
     };
     onSave(taskDetails.id, updatedTask);
+    const formattedFim = moment(editedTask.fim).format('YYYY-MM-DD');
+    editTask(token,
+      {
+        "titulo" : taskDetails.titulo,
+        "descricao" : taskDetails.descricao,
+        "data_Termino" : formattedFim,
+        "status" : taskDetails.status,
+        "user" : null
+      },
+      taskDetails.id
+    )
     onClose();
   };
 
@@ -74,6 +81,16 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
     
 
   }, [token]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    console.log("Changing field:", name, "to value:", value); // Verifica o valor do campo
+  
+    setEditedTask((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -109,6 +126,7 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
           onChange={handleInputChange}
           fullWidth
           margin="dense"
+          disabled = {true}
         />
 
         <Typography variant="body1"><strong>Fim:</strong></Typography>
@@ -119,6 +137,17 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
           onChange={handleInputChange}
           fullWidth
           margin="dense"
+        />
+
+        <Typography variant="body1"><strong>Titulo:</strong></Typography>
+        <TextField
+          name="titulo"
+          value={editedTask.titulo}
+          onChange={handleInputChange}
+          fullWidth
+          margin="dense"
+          multiline
+          rows={4}
         />
 
         <Typography variant="body1"><strong>Descrição:</strong></Typography>
