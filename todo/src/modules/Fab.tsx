@@ -7,6 +7,7 @@ import { getPayloadData } from "../services/utils";
 import { useAppSelector } from '../redux/hooks';
 import getAllTasks, { addTask, getAllUsers, getTasksByUserId } from '../services/api';
 import { isDataView } from 'util/types';
+import moment from 'moment';
 
 const FabButton = () => {
   const [open, setOpen] = useState(false);
@@ -49,6 +50,8 @@ const FabButton = () => {
     const { name, value } = event.target;
     setTaskData({ ...taskData, [name]: value });
   };
+
+  const today = moment().format('YYYY-MM-DD');
 
   const handleSubmit = () => {
     try{
@@ -115,6 +118,7 @@ const FabButton = () => {
             variant="outlined"
             value={taskData.fim}
             onChange={handleChange}
+            inputProps={{ min: today }}
           />
           <TextField
             margin="dense"

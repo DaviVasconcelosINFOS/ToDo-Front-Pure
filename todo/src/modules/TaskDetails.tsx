@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -11,10 +11,10 @@ import {
   Snackbar,
 } from "@mui/material";
 import { Task, TaskStatus } from "../redux/state";
-import { useAppSelector } from '../redux/hooks';
-import { getPayloadData } from '../services/utils';
-import { editTask } from '../services/api';
-import moment from 'moment';
+import { useAppSelector } from "../redux/hooks";
+import { getPayloadData } from "../services/utils";
+import { editTask } from "../services/api";
+import moment from "moment";
 
 interface DetailsDialogProps {
   open: boolean;
@@ -24,7 +24,7 @@ interface DetailsDialogProps {
     status: string;
     inicio: string;
     fim: string;
-    titulo : string;
+    titulo: string;
     descricao: string;
     utilizadorId: number | string;
     utilizador: string | string;
@@ -33,76 +33,94 @@ interface DetailsDialogProps {
 }
 
 const statusOptions: { [key: string]: string } = {
-  'open': 'Pendente',
-  'completed': 'Concluída',
-  'atrasado': 'Atrasado'
+  open: "Pendente",
+  completed: "Concluída",
+  atrasado: "Atrasado",
 };
 
 const statusReverseOptions: { [key: string]: TaskStatus } = {
-  'Pendente': 'open',
-  'Concluída': 'completed',
-  'Atrasado': 'atrasado'
+  Pendente: "open",
+  Concluída: "completed",
+  Atrasado: "atrasado",
 };
 
-
-const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetails, onSave }) => {
+const DetailsDialog: React.FC<DetailsDialogProps> = ({
+  open,
+  onClose,
+  taskDetails,
+  onSave,
+}) => {
   const [editedTask, setEditedTask] = useState(taskDetails);
   const [isAdmin, setIsAdmin] = useState(false);
-  const authState = useAppSelector(state => state.authState);
-  
+  const [error, setError] = useState<string | null>(null);
+  const authState = useAppSelector((state) => state.authState);
+
   const token = authState.token;
 
   const handleSave = () => {
-    try{
-    const updatedTask: Partial<Task> = {
+    try {
+      const updatedTask: Partial<Task> = {
         ...editedTask,
-        status: statusReverseOptions[statusOptions[editedTask.status]] as TaskStatus // Converte o status para o tipo esperado
+        status: statusReverseOptions[
+          statusOptions[editedTask.status]
+        ] as TaskStatus, // Converte o status para o tipo esperado
       };
       onSave(taskDetails.id, updatedTask);
-      
-      const formattedFim = moment(editedTask.fim).format('YYYY-MM-DD');
-      editTask(token,
+
+      const formattedFim = moment(editedTask.fim).format("YYYY-MM-DD");
+      editTask(
+        token,
         {
-          "titulo" : taskDetails.titulo,
-          "descricao" : taskDetails.descricao,
-          "data_Termino" : formattedFim,
-          "status" : updatedTask.status,
-          "user" : null
+          titulo: taskDetails.titulo,
+          descricao: taskDetails.descricao,
+          data_Termino: formattedFim,
+          status: updatedTask.status,
+          user: null,
         },
         taskDetails.id
       );
       onClose();
-    }catch{
-      console.error('Falha ao editar Tarefa');
+    } catch {
+      console.error("Falha ao editar Tarefa");
     }
   };
 
-
   React.useEffect(() => {
-    if (token){
+    if (token) {
       const payload = getPayloadData(token);
-      if(payload.role === 'admin'){
-        setIsAdmin(true)
+      if (payload.role === "admin") {
+        setIsAdmin(true);
       }
     }
   }, [token]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setEditedTask((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name === "fim" && moment(value).isBefore(editedTask.inicio)) {
+      setError("A data de término não pode ser anterior à data de início.");
+    } else {
+      setError(null);
+      setEditedTask((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Detalhes da Tarefa</DialogTitle>
       <DialogContent>
-        <Typography variant="body1"><strong>Status:</strong></Typography>
-        <Typography variant="body2">{statusOptions[editedTask.status]}</Typography>
+        <Typography variant="body1">
+          <strong>Status:</strong>
+        </Typography>
+        <Typography variant="body2">
+          {statusOptions[editedTask.status]}
+        </Typography>
 
-        <Typography variant="body1"><strong>Início:</strong></Typography>
+        <Typography variant="body1">
+          <strong>Início:</strong>
+        </Typography>
         <TextField
           name="inicio"
           type="date"
@@ -113,7 +131,9 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
           disabled
         />
 
-        <Typography variant="body1"><strong>Fim:</strong></Typography>
+        <Typography variant="body1">
+          <strong>Fim:</strong>
+        </Typography>
         <TextField
           name="fim"
           type="date"
@@ -121,9 +141,13 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
           onChange={handleInputChange}
           fullWidth
           margin="dense"
+          error={Boolean(error)}
+          helperText={error}
         />
 
-        <Typography variant="body1"><strong>Título:</strong></Typography>
+        <Typography variant="body1">
+          <strong>Título:</strong>
+        </Typography>
         <TextField
           name="titulo"
           value={editedTask.titulo}
@@ -134,7 +158,9 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
           rows={4}
         />
 
-        <Typography variant="body1"><strong>Descrição:</strong></Typography>
+        <Typography variant="body1">
+          <strong>Descrição:</strong>
+        </Typography>
         <TextField
           name="descricao"
           value={editedTask.descricao}
@@ -145,22 +171,41 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({ open, onClose, taskDetail
           rows={4}
         />
 
-        <Typography variant="body1" style={{ visibility: isAdmin ? 'visible' : 'hidden' }}><strong>Utilizador:</strong></Typography>
+        <Typography
+          variant="body1"
+          style={{ visibility: isAdmin ? "visible" : "hidden" }}
+        >
+          <strong>Utilizador:</strong>
+        </Typography>
         <TextField
           name="utilizador"
           value={editedTask.utilizadorId}
           onChange={handleInputChange}
           fullWidth
           margin="dense"
-          style={{ visibility: isAdmin ? 'visible' : 'hidden' }}
+          style={{ visibility: isAdmin ? "visible" : "hidden" }}
         />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
-        <Button onClick={handleSave} color="primary" variant="contained">
+        <Button
+          onClick={handleSave}
+          color="primary"
+          variant="contained"
+          disabled={Boolean(error)}
+        >
           Salvar
         </Button>
       </DialogActions>
+      <Snackbar
+        open={Boolean(error)}
+        autoHideDuration={6000}
+        onClose={() => setError(null)}
+      >
+        <Alert onClose={() => setError(null)} severity="error">
+          {error}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 };
