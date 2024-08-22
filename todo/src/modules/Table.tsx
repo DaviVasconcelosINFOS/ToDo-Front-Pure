@@ -477,6 +477,16 @@ export default function EnhancedTable() {
             aria-labelledby="tableTitle"
             size={dense ? "small" : "medium"}
           >
+            <EnhancedTableHead
+              numSelected={selected.length}
+              order={order}
+              orderBy={orderBy}
+              onSelectAllClick={handleSelectAllClick}
+              onRequestSort={handleRequestSort}
+              rowCount={tasksData.length}
+              isAdmin={isAdmin}
+            />
+            
             <TableBody>
               {stableSort(tasksData, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
