@@ -31,7 +31,7 @@ import { TaskStatus } from "../redux/state";
 import { PersistPartial } from "redux-persist/es/persistReducer";
 import getAllTasks, { deletTask, editTask, getTasksByUserId } from "../services/api";
 import { getPayloadData } from "../services/utils";
-import { Snackbar, Button, Alert } from "@mui/material";
+import { Snackbar, Button, Alert, Grid } from "@mui/material";
 
 
 interface Data {
@@ -336,7 +336,7 @@ export default function EnhancedTable() {
       const endDate = moment(task.data_Termino);
       console.info(now.isAfter(endDate));
       if (now.isAfter(endDate)) {
-        return "atrazado";
+        return "atrasado";
       } else if (endDate.diff(now, "days") <= 2) {
         return "close to end";
       } else {
@@ -468,30 +468,20 @@ export default function EnhancedTable() {
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ width: "100%", p: { xs: 1, sm: 2, md: 3 } }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
         <EnhancedTableToolbar numSelected={selected.length} />
         <TableContainer>
           <Table
-            sx={{ minWidth: 750 }}
+            sx={{ minWidth: { xs: 300, sm: 600, md: 750 } }}
             aria-labelledby="tableTitle"
             size={dense ? "small" : "medium"}
           >
-            <EnhancedTableHead
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
-              rowCount={tasksData.length}
-              isAdmin={isAdmin}
-            />
             <TableBody>
               {stableSort(tasksData, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row) => {
                   const isItemSelected = isSelected(row.id);
-                  const labelId = `enhanced-table-checkbox-${row.id}`;
 
                   return (
                     <TableRow
@@ -503,38 +493,44 @@ export default function EnhancedTable() {
                       key={row.id}
                       selected={isItemSelected}
                     >
-                      <TableCell align="left">
-                        {/* Status icons */}
-                        {row.status === "completed" ? (
-                          <Box sx={{ display: "flex", alignItems: "center" }}>
-                            <CircleIcon sx={{ color: "blue", mr: 1 }} />
-                            <Typography variant="body2">Concluído</Typography>
-                          </Box>
-                        ) : row.status === "close to end" ? (
-                          <Box sx={{ display: "flex", alignItems: "center" }}>
-                            <CircleIcon sx={{ color: "yellow", mr: 1 }} />
-                            <Typography variant="body2">
-                              Próximo do fim
+                      <TableCell align="left" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                        {/* Ícones de status para mobile */}
+                        <Grid container alignItems="center" spacing={1}>
+                          <Grid item>
+                            {row.status === "completed" && <CircleIcon sx={{ color: "blue" }} />}
+                            {row.status === "close to end" && <CircleIcon sx={{ color: "yellow" }} />}
+                            {row.status === "atrasado" && <CircleIcon sx={{ color: "red" }} />}
+                            {row.status === "Aberto" && <CircleIcon sx={{ color: "green" }} />}
+                          </Grid>
+                          <Grid item>
+                            <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                              {row.status === "completed"
+                                ? "Concluído"
+                                : row.status === "close to end"
+                                ? "Próximo do fim"
+                                : row.status === "atrasado"
+                                ? "Atrasado"
+                                : "Aberto"}
                             </Typography>
-                          </Box>
-                        ) : row.status === "atrazado" ? (
-                          <Box sx={{ display: "flex", alignItems: "center" }}>
-                            <CircleIcon sx={{ color: "red", mr: 1 }} />
-                            <Typography variant="body2">Atrasado</Typography>
-                          </Box>
-                        ) : (
-                          <Box sx={{ display: "flex", alignItems: "center" }}>
-                            <CircleIcon sx={{ color: "green", mr: 1 }} />
-                            <Typography variant="body2">Aberto</Typography>
-                          </Box>
-                        )}
+                          </Grid>
+                        </Grid>
                       </TableCell>
-                      <TableCell align="left">{row.inicio}</TableCell>
-                      <TableCell align="left">{row.fim}</TableCell>
-                      <TableCell align="left">{row.titulo}</TableCell>
-                      <TableCell align="left">{row.descricao}</TableCell>
+                      <TableCell align="left" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                        {row.inicio}
+                      </TableCell>
+                      <TableCell align="left" sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+                        {row.fim}
+                      </TableCell>
+                      <TableCell align="left" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                        {row.titulo}
+                      </TableCell>
+                      <TableCell align="left" sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+                        {row.descricao}
+                      </TableCell>
                       {isAdmin && (
-                        <TableCell align="left">{row.utilizador}</TableCell>
+                        <TableCell align="left" sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+                          {row.utilizador}
+                        </TableCell>
                       )}
                       <TableCell align="left">
                         <Tooltip title="Informações">
@@ -546,7 +542,7 @@ export default function EnhancedTable() {
                           <span>
                             <IconButton
                               onClick={() => handleComplete(row.id)}
-                              disabled={row.status === "Completed"}
+                              disabled={row.status === "completed"}
                             >
                               <CheckCircleIcon />
                             </IconButton>
@@ -561,13 +557,10 @@ export default function EnhancedTable() {
                     </TableRow>
                   );
                 })}
+              {/* Espaçamento para linhas vazias */}
               {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: (dense ? 33 : 53) * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={isAdmin ? 5 : 6} />
+                <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}>
+                  <TableCell colSpan={6} />
                 </TableRow>
               )}
             </TableBody>
@@ -606,6 +599,5 @@ export default function EnhancedTable() {
         </Alert>
       </Snackbar>
     </Box>
-    
   );
 }

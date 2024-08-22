@@ -63,7 +63,7 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({
         ...editedTask,
         status: statusReverseOptions[
           statusOptions[editedTask.status]
-        ] as TaskStatus, // Converte o status para o tipo esperado
+        ] as TaskStatus,
       };
       onSave(taskDetails.id, updatedTask);
 

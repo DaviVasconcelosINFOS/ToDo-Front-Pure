@@ -25,7 +25,7 @@ const Dashboard: React.FC = () => {
   };
 
   const openTasks = useMemo(() => getTaskCountByStatus(tasks, ['open', 'close to end']), [tasks]);
-  const expiredTasks = useMemo(() => getTaskCountByStatus(tasks, ['atrazado']), [tasks]);
+  const expiredTasks = useMemo(() => getTaskCountByStatus(tasks, ['atrasado']), [tasks]);
   const completedTasks = useMemo(() => getTaskCountByStatus(tasks, ['completed']), [tasks]);
 
   return (
