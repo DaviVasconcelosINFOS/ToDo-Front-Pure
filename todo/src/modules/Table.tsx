@@ -500,7 +500,7 @@ export default function EnhancedTable() {
                             {row.status === "completed" && <CircleIcon sx={{ color: "blue" }} />}
                             {row.status === "close to end" && <CircleIcon sx={{ color: "yellow" }} />}
                             {row.status === "atrasado" && <CircleIcon sx={{ color: "red" }} />}
-                            {row.status === "Aberto" && <CircleIcon sx={{ color: "green" }} />}
+                            {row.status === "open" && <CircleIcon sx={{ color: "green" }} />}
                           </Grid>
                           <Grid item>
                             <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
