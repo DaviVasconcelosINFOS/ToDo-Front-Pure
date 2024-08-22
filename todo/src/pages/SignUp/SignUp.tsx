@@ -1,10 +1,13 @@
 import React from 'react';
-import { Grid, CssBaseline, Paper, Box, Avatar, Typography, TextField, Button, Link } from '@mui/material';
+import { Grid, CssBaseline, Paper, Box, Avatar, Typography, TextField, Button, Link, Alert, Snackbar } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useNavigate } from 'react-router-dom';
 import { signUpApi } from '../../services/api';
+import { error } from 'console';
 
 function SignUp() {
+    const [openSnackbar, setOpenSnackbar] = React.useState(false);
+    const [snackbarMessage, setSnackbarMessage] = React.useState('');
     const navigate = useNavigate(); // Usa o hook 'useNavigate'
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -18,26 +21,38 @@ function SignUp() {
 
         if (typeof email === 'string' && typeof password === 'string' && typeof repassword === 'string' && typeof nome === 'string') {
             if (password === repassword) {
-                signUpApi(email, password)
+                signUpApi(email, password, nome)
                     .then(response => {
                         if (response.data === true) {
                             navigate('/'); // Usa 'navigate' para redirecionar
                         } else {
                             console.error('Erro'); // Mostrar alerta se necessário
+                            setSnackbarMessage('Erro ao fazer sing in');
+                            setOpenSnackbar(true);
                         }
                     })
                     .catch(error => {
-                        console.error('Sign up failed:', error); // Mostrar alerta se necessário
+                        setSnackbarMessage('Sign up failed: '+ error); // Mostrar alerta se necessário
+                        setOpenSnackbar(true);
                     });
             } else {
-                console.error('Passwords don\'t match.'); // Mostrar alerta se necessário
+                setSnackbarMessage('Passwords don\'t match.'); // Mostrar alerta se necessário
+                setOpenSnackbar(true);
             }
         } else {
-            console.error('Email or password is missing or invalid.'); // Mostrar alerta se necessário
+            setSnackbarMessage('Email or password is missing or invalid.'); // Mostrar alerta se necessário
+            setOpenSnackbar(true);
         }
+
+
+    };
+
+    const handleCloseSnackbar = () => {
+        setOpenSnackbar(false);
     };
 
     return (
+        <>
         <Grid container component="main" sx={{ height: '100vh' }}>
             <CssBaseline />
             <Grid
@@ -66,7 +81,7 @@ function SignUp() {
                     <Typography component="h1" variant="h5">
                         Sign Up
                     </Typography>
-                    <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
+                    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
                         <TextField
                             margin="normal"
                             required
@@ -75,6 +90,7 @@ function SignUp() {
                             label="Nome"
                             name="name"
                             autoFocus
+                            aria-required
                         />
                         <TextField
                             margin="normal"
@@ -85,6 +101,11 @@ function SignUp() {
                             name="email"
                             autoComplete="email"
                             autoFocus
+                            aria-required
+                            inputProps={{
+                                pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+                                title: "Please enter a valid email address"
+                            }}
                         />
                         <TextField
                             margin="normal"
@@ -95,6 +116,7 @@ function SignUp() {
                             type="password"
                             id="password"
                             autoComplete="current-password"
+                            aria-required
                         />
                         <TextField
                             margin="normal"
@@ -104,6 +126,7 @@ function SignUp() {
                             label="Repeat Password"
                             type="password"
                             id="repassword"
+                            aria-required
                         />
                         <Button
                             type="submit"
@@ -124,7 +147,26 @@ function SignUp() {
                 </Box>
             </Grid>
         </Grid>
+        <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        action={
+          <Button color="inherit" onClick={handleCloseSnackbar}>
+            Close
+          </Button>
+        }
+      >
+        <Alert onClose={handleCloseSnackbar} severity="info" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+      </>
     );
 }
 
 export default SignUp;
+function useState<T>(arg0: null): [any, any] {
+    throw new Error('Function not implemented.');
+}
+

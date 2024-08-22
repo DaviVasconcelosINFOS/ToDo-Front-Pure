@@ -65,12 +65,22 @@ export async function login(email: string, password: string) {
   }
 }
 
-export async function signUpApi(email: string, password: string) {
+export async function signUpApi(email: string, password: string, nome : string) {
     try {
-      const response = await axios.post(`${URL}/auth/register`, {
-        email,
-        password,
-      });
+      const response = await axios({
+        method: 'post',
+        url: `${URL}/auth/register`,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        data:{
+          nome : nome,
+          email : email,
+          password : password,
+        }
+      }
+      );
       return response.data;
     } catch (error) {
       console.error('Erro ao registrar novo usuário:', error);
