@@ -31,7 +31,7 @@ import { TaskStatus } from "../redux/state";
 import { PersistPartial } from "redux-persist/es/persistReducer";
 import getAllTasks, { deletTask, editTask, getTasksByUserId } from "../services/api";
 import { getPayloadData } from "../services/utils";
-import { Snackbar, Button, Alert, Grid } from "@mui/material";
+import { Snackbar, Button, Alert, Grid, useMediaQuery } from "@mui/material";
 
 
 interface Data {
@@ -486,7 +486,7 @@ export default function EnhancedTable() {
               rowCount={tasksData.length}
               isAdmin={isAdmin}
             />
-            
+
             <TableBody>
               {stableSort(tasksData, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)

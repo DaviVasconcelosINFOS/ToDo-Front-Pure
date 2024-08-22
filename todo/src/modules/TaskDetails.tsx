@@ -58,6 +58,11 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({
   const token = authState.token;
 
   const handleSave = () => {
+    if (!editedTask.titulo || !editedTask.descricao || !editedTask.fim) {
+      setError("Todos os campos são obrigatórios.");
+      return;
+    }
+
     try {
       const updatedTask: Partial<Task> = {
         ...editedTask,
@@ -129,6 +134,7 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({
           fullWidth
           margin="dense"
           disabled
+          required
         />
 
         <Typography variant="body1">
@@ -143,6 +149,7 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({
           margin="dense"
           error={Boolean(error)}
           helperText={error}
+          required
         />
 
         <Typography variant="body1">
@@ -154,8 +161,7 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({
           onChange={handleInputChange}
           fullWidth
           margin="dense"
-          multiline
-          rows={4}
+          required
         />
 
         <Typography variant="body1">
@@ -169,6 +175,7 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({
           margin="dense"
           multiline
           rows={4}
+          required
         />
 
         <Typography
@@ -183,6 +190,7 @@ const DetailsDialog: React.FC<DetailsDialogProps> = ({
           onChange={handleInputChange}
           fullWidth
           margin="dense"
+          required={isAdmin}
           style={{ visibility: isAdmin ? "visible" : "hidden" }}
         />
       </DialogContent>
