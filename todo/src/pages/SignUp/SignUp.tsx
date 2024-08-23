@@ -8,7 +8,7 @@ import { error } from 'console';
 function SignUp() {
     const [openSnackbar, setOpenSnackbar] = React.useState(false);
     const [snackbarMessage, setSnackbarMessage] = React.useState('');
-    const navigate = useNavigate(); // Usa o hook 'useNavigate'
+    const navigate = useNavigate();
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -24,23 +24,23 @@ function SignUp() {
                 signUpApi(email, password, nome)
                     .then(response => {
                         if (response.data === true) {
-                            navigate('/'); // Usa 'navigate' para redirecionar
+                            navigate('/');
                         } else {
-                            console.error('Erro'); // Mostrar alerta se necessário
+                            console.error('Erro');
                             setSnackbarMessage('Erro ao fazer sing in');
                             setOpenSnackbar(true);
                         }
                     })
                     .catch(error => {
-                        setSnackbarMessage('Sign up failed: '+ error); // Mostrar alerta se necessário
+                        setSnackbarMessage('Sign up failed: '+ error);
                         setOpenSnackbar(true);
                     });
             } else {
-                setSnackbarMessage('Passwords don\'t match.'); // Mostrar alerta se necessário
+                setSnackbarMessage('Passwords don\'t match.');
                 setOpenSnackbar(true);
             }
         } else {
-            setSnackbarMessage('Email or password is missing or invalid.'); // Mostrar alerta se necessário
+            setSnackbarMessage('Email or password is missing or invalid.');
             setOpenSnackbar(true);
         }
 
